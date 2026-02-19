@@ -9,139 +9,155 @@ const POSTS_COLLECTION = 'posts';
 
 // Verify JWT token
 function verifyToken(req: VercelRequest): { userId: string; username: string } | null {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
+	const authHeader = req.headers.authorization;
+	if (!authHeader || !authHeader.startsWith('Bearer ')) {
+		return null;
+	}
 
-  const token = authHeader.substring(7);
-  try {
-    return jwt.verify(token, JWT_SECRET) as { userId: string; username: string };
-  } catch {
-    return null;
-  }
+	const token = authHeader.substring(7);
+	try {
+		return jwt.verify(token, JWT_SECRET) as { userId: string; username: string };
+	} catch {
+		return null;
+	}
 }
 
 // CORS headers
 function setCorsHeaders(res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PUT,DELETE');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  );
+	res.setHeader('Access-Control-Allow-Credentials', 'true');
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PUT,DELETE');
+	res.setHeader(
+		'Access-Control-Allow-Headers',
+		'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+	);
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  setCorsHeaders(res);
+	setCorsHeaders(res);
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+	if (req.method === 'OPTIONS') {
+		res.status(200).end();
+		return;
+	}
 
-  if (!MONGODB_URI) {
-    return res.status(500).json({ error: 'Database not configured' });
-  }
+	if (!MONGODB_URI) {
+		return res.status(500).json({ error: 'Database not configured' });
+	}
 
-  const { slug } = req.query;
+	// Extract slug from URL - handle multiple formats
+	let slug: string | undefined;
 
-  if (!slug || typeof slug !== 'string') {
-    return res.status(400).json({ error: 'Slug is required' });
-  }
+	// Try different ways Vercel might pass the parameter
+	if (req.query.slug) {
+		slug = typeof req.query.slug === 'string' ? req.query.slug : req.query.slug[0];
+	} else if (req.query[0]) {
+		// Sometimes Vercel passes it as an indexed parameter
+		slug = typeof req.query[0] === 'string' ? req.query[0] : req.query[0][0];
+	}
 
-  const client = new MongoClient(MONGODB_URI);
+	// Debug logging
+	console.log('Request URL:', req.url);
+	console.log('Request query:', req.query);
+	console.log('Extracted slug:', slug);
+	if (!slug || typeof slug !== 'string') {
+		return res.status(400).json({
+			error: 'Slug is required',
+			debug: { query: req.query, url: req.url }
+		});
+	}
 
-  try {
-    await client.connect();
-    const db = client.db(DB_NAME);
-    const posts = db.collection(POSTS_COLLECTION);
+	const client = new MongoClient(MONGODB_URI);
 
-    // GET - Get single post
-    if (req.method === 'GET') {
-      const post = await posts.findOne({ slug });
+	try {
+		await client.connect();
+		const db = client.db(DB_NAME);
+		const posts = db.collection(POSTS_COLLECTION);
 
-      if (!post) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
+		// GET - Get single post
+		if (req.method === 'GET') {
+			const post = await posts.findOne({ slug });
 
-      return res.status(200).json(post);
-    }
+			if (!post) {
+				return res.status(404).json({ error: 'Post not found' });
+			}
 
-    // PUT - Update post (protected)
-    if (req.method === 'PUT') {
-      const user = verifyToken(req);
-      if (!user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
+			return res.status(200).json(post);
+		}
 
-      const existingPost = await posts.findOne({ slug });
-      if (!existingPost) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
+		// PUT - Update post (protected)
+		if (req.method === 'PUT') {
+			const user = verifyToken(req);
+			if (!user) {
+				return res.status(401).json({ error: 'Unauthorized' });
+			}
 
-      const { title, excerpt, content, tags, featured, status, coverImage, slug: newSlug } = req.body;
+			const existingPost = await posts.findOne({ slug });
+			if (!existingPost) {
+				return res.status(404).json({ error: 'Post not found' });
+			}
 
-      // If changing slug, check it doesn't conflict
-      if (newSlug && newSlug !== slug) {
-        const existing = await posts.findOne({ slug: newSlug });
-        if (existing) {
-          return res.status(409).json({ error: 'Slug already exists' });
-        }
-      }
+			const { title, excerpt, content, tags, featured, status, coverImage, slug: newSlug } = req.body;
 
-      // Calculate new read time if content changed
-      let readTime = existingPost.readTime;
-      if (content) {
-        const wordCount = content.split(/\s+/).length;
-        readTime = Math.ceil(wordCount / 200);
-      }
+			// If changing slug, check it doesn't conflict
+			if (newSlug && newSlug !== slug) {
+				const existing = await posts.findOne({ slug: newSlug });
+				if (existing) {
+					return res.status(409).json({ error: 'Slug already exists' });
+				}
+			}
 
-      const updates: Record<string, unknown> = {
-        updatedAt: new Date(),
-        readTime,
-      };
+			// Calculate new read time if content changed
+			let readTime = existingPost.readTime;
+			if (content) {
+				const wordCount = content.split(/\s+/).length;
+				readTime = Math.ceil(wordCount / 200);
+			}
 
-      if (title) updates.title = title;
-      if (excerpt !== undefined) updates.excerpt = excerpt;
-      if (content) updates.content = content;
-      if (tags) updates.tags = tags;
-      if (featured !== undefined) updates.featured = featured;
-      if (status) updates.status = status;
-      if (coverImage !== undefined) updates.coverImage = coverImage;
-      if (newSlug) updates.slug = newSlug;
+			const updates: Record<string, unknown> = {
+				updatedAt: new Date(),
+				readTime,
+			};
 
-      const result = await posts.findOneAndUpdate(
-        { slug },
-        { $set: updates },
-        { returnDocument: 'after' }
-      );
+			if (title) updates.title = title;
+			if (excerpt !== undefined) updates.excerpt = excerpt;
+			if (content) updates.content = content;
+			if (tags) updates.tags = tags;
+			if (featured !== undefined) updates.featured = featured;
+			if (status) updates.status = status;
+			if (coverImage !== undefined) updates.coverImage = coverImage;
+			if (newSlug) updates.slug = newSlug;
 
-      return res.status(200).json(result);
-    }
+			const result = await posts.findOneAndUpdate(
+				{ slug },
+				{ $set: updates },
+				{ returnDocument: 'after' }
+			);
 
-    // DELETE - Delete post (protected)
-    if (req.method === 'DELETE') {
-      const user = verifyToken(req);
-      if (!user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
+			return res.status(200).json(result);
+		}
 
-      const result = await posts.deleteOne({ slug });
+		// DELETE - Delete post (protected)
+		if (req.method === 'DELETE') {
+			const user = verifyToken(req);
+			if (!user) {
+				return res.status(401).json({ error: 'Unauthorized' });
+			}
 
-      if (result.deletedCount === 0) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
+			const result = await posts.deleteOne({ slug });
 
-      return res.status(200).json({ message: 'Post deleted' });
-    }
+			if (result.deletedCount === 0) {
+				return res.status(404).json({ error: 'Post not found' });
+			}
 
-    return res.status(405).json({ error: 'Method not allowed' });
-  } catch (error) {
-    console.error('Post API error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  } finally {
-    await client.close();
-  }
+			return res.status(200).json({ message: 'Post deleted' });
+		}
+
+		return res.status(405).json({ error: 'Method not allowed' });
+	} catch (error) {
+		console.error('Post API error:', error);
+		return res.status(500).json({ error: 'Internal server error' });
+	} finally {
+		await client.close();
+	}
 }
