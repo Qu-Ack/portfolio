@@ -302,6 +302,24 @@ body {
   color: var(--text-secondary);
 }
 
+/* Loading state */
+.blog-loading {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+/* Error state */
+.blog-error {
+  text-align: center;
+  padding: 2rem;
+  margin: 1rem 0;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 6px;
+  color: #ef4444;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   #root {

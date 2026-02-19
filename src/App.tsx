@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { BlogPost } from './types/blog';
 import { BlogPostView } from './components/blog';
 import { About } from './components/about';
@@ -8,21 +8,45 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/useAuth';
-import { blogCMS } from './data/cms';
+import { postsService } from './services/postsService';
 import './App.css';
 
 function AppContent() {
-  const [posts] = useState<BlogPost[]>(() => blogCMS.getAllPosts());
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [view, setView] = useState<'list' | 'post' | 'about' | 'editor' | 'login'>('list');
   const { isAuthenticated, logout, user } = useAuth();
 
-  const handlePostClick = (slug: string) => {
-    const post = blogCMS.getPostBySlug(slug);
-    if (post) {
-      setSelectedPost(post);
-      setView('post');
-      window.scrollTo(0, 0);
+  // Fetch posts from API on mount
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        const fetchedPosts = await postsService.getAllPosts('published');
+        setPosts(fetchedPosts);
+      } catch (err) {
+        setError('Failed to load posts');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  const handlePostClick = async (slug: string) => {
+    try {
+      const post = await postsService.getPostBySlug(slug);
+      if (post) {
+        setSelectedPost(post);
+        setView('post');
+        window.scrollTo(0, 0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch post:', err);
     }
   };
 
@@ -55,14 +79,16 @@ function AppContent() {
   };
 
   const handleSavePost = async (post: Partial<BlogPost>) => {
-    // For now, just log it. Later connect to API
-    console.log('Saving post:', post);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Return to list
-    setView('list');
+    try {
+      await postsService.createPost(post);
+      // Refresh posts list
+      const fetchedPosts = await postsService.getAllPosts('published');
+      setPosts(fetchedPosts);
+      setView('list');
+    } catch (err) {
+      console.error('Failed to save post:', err);
+      throw err;
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -162,6 +188,20 @@ function AppContent() {
             <hr className="separator" />
 
             <section className="blog-section">
+              {loading && (
+                <div className="blog-loading">Loading posts...</div>
+              )}
+              
+              {error && (
+                <div className="blog-error">{error}</div>
+              )}
+              
+              {!loading && !error && posts.length === 0 && (
+                <div className="blog-empty">
+                  <p>No posts yet. {isAuthenticated && 'Click "New Post" to create one!'}</p>
+                </div>
+              )}
+              
               <ul className="blog-list-wrapper">
                 {posts.map((post) => (
                   <li key={post.id} className="blog-list-item">
