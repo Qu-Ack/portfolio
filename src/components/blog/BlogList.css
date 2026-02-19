@@ -1,0 +1,14 @@
+.blog-list {
+  width: 100%;
+}
+
+.blog-list-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #666;
+}
+
+.blog-list-empty p {
+  font-size: 1.125rem;
+  margin: 0;
+}
