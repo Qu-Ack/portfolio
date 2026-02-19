@@ -52,8 +52,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 	if (req.query.slug) {
 		slug = typeof req.query.slug === 'string' ? req.query.slug : req.query.slug[0];
 	} else if (req.query[0]) {
-		// Sometimes Vercel passes it as an indexed parameter
 		slug = typeof req.query[0] === 'string' ? req.query[0] : req.query[0][0];
+	} else if (req.url) {
+		const segments = req.url.split('/').filter(Boolean);
+		slug = segments[segments.length - 1]?.split('?')[0];
 	}
 
 	// Debug logging
