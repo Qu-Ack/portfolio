@@ -161,7 +161,7 @@ function AppContent() {
           <>
             <section className="hero-section">
               <img 
-                src="/avatar.jpg" 
+                src="/avatar.jpeg" 
                 alt="Profile avatar" 
                 className="hero-avatar"
                 onError={(e) => {
@@ -171,16 +171,15 @@ function AppContent() {
               />
               <div className="hero-content">
                 <h1 className="hero-title">
-                  <a href="/">Hi, I'm @username.</a>
+                  <a href="/">Hi, I'm Daksh Sangal.</a>
                 </h1>
                 <p className="hero-subtitle">
-                  Thoughts on software development, tools, and technology.<br />
+                  Computer Science student exploring software development, tools, and technology.<br />
                   Every commit is open source for you to learn from.
                 </p>
                 <div className="social-links">
-                  <a href="https://github.com" className="social-link" target="_blank" rel="noopener noreferrer">GitHub</a>
-                  <a href="https://twitter.com" className="social-link" target="_blank" rel="noopener noreferrer">X</a>
-                  <a href="mailto:hello@example.com" className="social-link">Email</a>
+                  <a href="https://github.com/Qu-Ack" className="social-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+                  <a href="https://x.com/SangalDaksh" className="social-link" target="_blank" rel="noopener noreferrer">X</a>
                 </div>
               </div>
             </section>
@@ -256,12 +255,12 @@ function AppContent() {
 
       <footer className="site-footer">
         <div className="footer-links">
-          <a href="https://github.com" className="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href="https://twitter.com" className="footer-link" target="_blank" rel="noopener noreferrer">X</a>
-          <a href="mailto:hello@example.com" className="footer-link">Email</a>
+          <a href="https://github.com/Qu-Ack" className="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://x.com/SangalDaksh" className="footer-link" target="_blank" rel="noopener noreferrer">X</a>
+          <a href="https://github.com/Qu-Ack/portfolio" className="footer-link" target="_blank" rel="noopener noreferrer">View Source</a>
         </div>
         <p className="footer-copyright">
-          © {new Date().getFullYear()} Built with React + TypeScript
+          It's free, you dummy.
         </p>
       </footer>
     </div>

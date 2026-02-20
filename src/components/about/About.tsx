@@ -7,12 +7,12 @@ export const About: React.FC = () => {
       <section className="about-hero">
         <div className="about-image-container">
           <img 
-            src="/dev-photo.jpg" 
-            alt="Developer portrait" 
+            src="/avatar.jpeg" 
+            alt="Daksh Sangal" 
             className="about-image"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/avatar.jpg';
+              target.src = '/avatar.jpeg';
             }}
           />
         </div>
@@ -22,7 +22,7 @@ export const About: React.FC = () => {
           
           <div className="about-text">
             <p className="about-intro">
-              I'm a developer who believes in the power of simplicity. 
+              I'm Daksh Sangal, a 20-year-old Computer Science and Engineering student in my 3rd year. 
               This blog is where I document my journey through code, 
               share what I've learned, and explore the ever-evolving landscape of technology.
             </p>
@@ -54,7 +54,7 @@ export const About: React.FC = () => {
           <div className="about-section">
             <h2>Connect</h2>
             <p className="about-connect">
-              The best way to reach me is via email or on GitHub. 
+              The best way to reach me is on GitHub or X. 
               I'm always interested in discussing new ideas, collaborating on projects, 
               or just chatting about technology.
             </p>
