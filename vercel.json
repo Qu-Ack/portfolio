@@ -1,45 +1,29 @@
 {
-  "version": 2,
   "builds": [
     {
-      "src": "api/**/*.ts",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
+      "src": "src/main.tsx",
+      "use": "@vitejs/plugin-react-swc",
       "config": {
-        "distDir": "dist"
+        "vite": {
+          "build": {
+            "rollupOptions": {
+              "input": {
+                "main": "/home/quack/git_repos/portfolio/src/main.tsx"
+              }
+            }
+          }
+        }
       }
     }
   ],
   "routes": [
     {
-      "src": "/api/auth/login",
-      "dest": "/api/auth/login.ts"
-    },
-    {
-      "src": "/api/auth/verify",
-      "dest": "/api/auth/verify.ts"
-    },
-    {
-      "src": "/api/posts/([^/]+)",
-      "dest": "/api/posts/[slug].ts"
-    },
-    {
-      "src": "/api/posts",
-      "dest": "/api/posts/index.ts"
-    },
-    {
-      "src": "/api",
-      "dest": "/api/index.ts"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/src/main.tsx"
     }
-  ]
+  ],
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite"
 }

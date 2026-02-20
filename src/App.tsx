@@ -2,12 +2,8 @@ import { useState, useEffect } from 'react';
 import type { BlogPost } from './types/blog';
 import { BlogPostView } from './components/blog';
 import { About } from './components/about';
-import { Editor } from './components/editor';
-import { Login } from './pages/Login';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ThemeProvider } from './context/ThemeContext';
-import { AuthProvider } from './context/AuthContext';
-import { useAuth } from './context/useAuth';
 import { postsService } from './services/postsService';
 import './App.css';
 
@@ -16,10 +12,8 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
-  const [view, setView] = useState<'list' | 'post' | 'about' | 'editor' | 'login'>('list');
-  const { isAuthenticated, logout, user } = useAuth();
+  const [view, setView] = useState<'list' | 'post' | 'about'>('list');
 
-  // Fetch posts from API on mount
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -62,35 +56,6 @@ function AppContent() {
     window.scrollTo(0, 0);
   };
 
-  const handleEditorClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (isAuthenticated) {
-      setView('editor');
-    } else {
-      setView('login');
-    }
-    window.scrollTo(0, 0);
-  };
-
-  const handleLoginClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setView('login');
-    window.scrollTo(0, 0);
-  };
-
-  const handleSavePost = async (post: Partial<BlogPost>) => {
-    try {
-      await postsService.createPost(post);
-      // Refresh posts list
-      const fetchedPosts = await postsService.getAllPosts('published');
-      setPosts(fetchedPosts);
-      setView('list');
-    } catch (err) {
-      console.error('Failed to save post:', err);
-      throw err;
-    }
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -124,34 +89,9 @@ function AppContent() {
             >
               About
             </a>
-            {isAuthenticated ? (
-              <a 
-                href="#editor" 
-                className={`nav-link ${view === 'editor' ? 'active' : ''}`}
-                onClick={handleEditorClick}
-              >
-                New Post
-              </a>
-            ) : (
-              <a 
-                href="#login" 
-                className={`nav-link ${view === 'login' ? 'active' : ''}`}
-                onClick={handleLoginClick}
-              >
-                Login
-              </a>
-            )}
           </div>
           <div className="nav-actions">
-            {isAuthenticated && user && (
-              <span className="nav-user">@{user.username}</span>
-            )}
             <ThemeToggle />
-            {isAuthenticated && (
-              <button onClick={logout} className="nav-logout">
-                Logout
-              </button>
-            )}
           </div>
         </nav>
       </header>
@@ -197,7 +137,7 @@ function AppContent() {
               
               {!loading && !error && posts.length === 0 && (
                 <div className="blog-empty">
-                  <p>No posts yet. {isAuthenticated && 'Click "New Post" to create one!'}</p>
+                  <p>No posts yet.</p>
                 </div>
               )}
               
@@ -238,19 +178,6 @@ function AppContent() {
         )}
 
         {view === 'about' && <About />}
-
-        {view === 'editor' && isAuthenticated && (
-          <Editor 
-            onSave={handleSavePost}
-            onCancel={handleBackToList}
-          />
-        )}
-
-        {view === 'editor' && !isAuthenticated && (
-          <Login />
-        )}
-
-        {view === 'login' && <Login />}
       </main>
 
       <footer className="site-footer">
@@ -270,9 +197,7 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <AppContent />
     </ThemeProvider>
   );
 }
