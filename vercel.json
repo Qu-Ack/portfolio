@@ -1,28 +1,4 @@
 {
-  "builds": [
-    {
-      "src": "src/main.tsx",
-      "use": "@vitejs/plugin-react-swc",
-      "config": {
-        "vite": {
-          "build": {
-            "rollupOptions": {
-              "input": {
-                "main": "/home/quack/git_repos/portfolio/src/main.tsx"
-              }
-            }
-          }
-        }
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/src/main.tsx"
-    }
-  ],
-  "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite"
