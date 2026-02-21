@@ -7,12 +7,12 @@ export const About: React.FC = () => {
       <section className="about-hero">
         <div className="about-image-container">
           <img 
-            src="/avatar.jpeg" 
-            alt="Daksh Sangal" 
+            src={`${import.meta.env.BASE_URL}avatar.jpeg`}
+            alt="Daksh Sangal"
             className="about-image"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/avatar.jpeg';
+              target.src = `${import.meta.env.BASE_URL}avatar.jpeg`;
             }}
           />
         </div>

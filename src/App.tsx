@@ -101,8 +101,8 @@ function AppContent() {
           <>
             <section className="hero-section">
               <img 
-                src="/avatar.jpeg" 
-                alt="Profile avatar" 
+                src={`${import.meta.env.BASE_URL}avatar.jpeg`}
+                alt="Profile avatar"
                 className="hero-avatar"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
