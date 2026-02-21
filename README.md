@@ -9,7 +9,7 @@ A modern, static blog built with React + TypeScript + Vite. Posts are stored as 
 - 🎨 **Responsive Design** - Works perfectly on all devices
 - 🌙 **Dark/Light Theme** - Toggle between themes
 - 🚀 **Static Site** - No database required
-- 📱 **GitHub Pages Ready** - Deploy for free on Vercel/Netlify
+- 📱 **GitHub Pages Ready** - Deploy for free
 
 ## 📂 Project Structure
 
@@ -85,22 +85,11 @@ npm run lint     # Run ESLint
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
-
-1. Connect your GitHub repository to Vercel
-2. It will automatically detect the Vite setup
-3. On every push, it will build and deploy the site
-
-### Netlify
-
-1. Build command: `npm run build`
-2. Publish directory: `dist`
-3. Add `vercel.json` to root for proper routing
-
 ### GitHub Pages
 
 1. Build: `npm run build`
 2. Deploy `dist/` folder to GitHub Pages
+3. Or use `npm run deploy` with gh-pages
 
 ## 📦 Dependencies
 
@@ -124,7 +113,7 @@ npm run lint     # Run ESLint
 - `vite.config.ts` - Vite configuration
 - `tsconfig.json` - TypeScript configuration  
 - `eslint.config.js` - ESLint configuration
-- `vercel.json` - Vercel deployment config
+
 
 ## 🤝 Contributing
 
