@@ -25,3 +25,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# Blog posts (shelved)
+src/posts/art-of-clean-code.md
+src/posts/the-realization.md
+
