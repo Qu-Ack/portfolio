@@ -60,7 +60,7 @@ export function getAllPosts(): BlogPost[] {
       tags: Array.isArray(frontmatter.tags) ? frontmatter.tags : [],
       author: {
         name: 'Daksh Sangal',
-        avatar: `${import.meta.env.BASE_URL}/portfolio/avatar.jpeg`,
+        avatar: `${import.meta.env.BASE_URL}avatar.jpeg`,
       },
       featured: Boolean(frontmatter.featured),
       status: 'published',
